@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Giphy Fun!</title>
+  <style type="text/css">
+
+    font {    
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      margin-left: 70px;
+      margin-top: 60px;
+      padding: 30px;
+      background-color: blue;
+    }
+
+    h1 {
+      font-family: Arial, sans-serif;
+      margin-top: 30px;
+      margin-left: 22px;
+      color: white;
+    }
+
+    #nameOfApp {
+     margin-top: 30px; 
+    }
+
+    #prof-form {
+      margin-left: 25px;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    #add-prof {
+      margin-left: 125px;
+    }
+
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1 id="nameOfApp">Giphy Fun!</h1>
+
+    <!-- ratings and buttons will get dumped here -->
+    <div id="ratings_buttons">
+    </div>
+
+    <form id="prof-form">
+      <label for="prof-input"><strong>Add a Profession</strong></label>
+      <input type="text" id="prof-input"><br>
+
+      <!-- Button triggers new topic to be added -->
+      <input id="add-prof" type="submit" value="Submit the profession">
+    
+    
+    <div id="giphy-images"></div>
+    
+    
+    
+    
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    
+
+    //var queryURL = "https://api.giphy.com/v1/gifs/search?q=professions&api_key=gdASHV7Mmy3UZpUWVwXOXJ1TdUJRW0OO&limit=20";
+
+  // Initial array of professions
+
+    var profs = ["Teacher", "Doctor", "Nurse", "Shopkeeper", "Farmer", "Firefighter", "Mailman", "Chef"]
+
+
+  // AJAX gets the data from the first 40 records and then loops through them creating buttons
+
+  //   $.ajax({
+  //   url: queryURL,
+  //   method: "GET"
+  //   }).then(function(response) {
+  //   var i;
+  //   for (i=0; i<response.data.length; i++)
+  //   {
+  //   renderButtons(response.data[i]);
+  //   }
+
+  // console.log(response);
+  // })
+
+
+    // Function for displaying giphy buttons related to professions
+    function renderButtons() {
+
+    // Deleting the giphy buttons prior to adding new giphy buttons
+    // (this is necessary otherwise we will have repeat buttons)
+      $("#ratings_buttons").empty();
+
+      // Looping through the array of professions
+      for (var i = 0; i < profs.length; i++) {
+
+        // Then dynamically generating buttons for a giphy for each topic in the array.
+        // This code $("<button>") is all jQuery needs to create the start and end tag. (<button></button>)
+        var a = $("<button>");
+
+        // Adding a class
+        a.addClass("prof");
+
+        // Adding a data-attribute with a value of the prof at index i
+        a.attr("data-name", profs[i]);
+
+        // Providing the button's text with a value of the prof at index i
+        a.text(profs[i]);
+
+        // Adding the button to the HTML
+        $("#ratings_buttons").append(a);
+        }
+      }
+
+      
+
+      // This function handles events where one button is clicked
+      $("#add-prof").on("click", function(event) {
+
+        // event.preventDefault() prevents the form from trying to submit itself.
+        // We're using a form so that the user can hit enter instead of clicking the button if they want
+        event.preventDefault();
+
+        // This line will grab the text from the input box
+        var prof = $("#prof-input").val().trim();
+
+        // The profession from the textbox is then added to our array
+        profs.push(prof);
+
+        // calling renderButtons which handles the processing of our profession array
+        renderButtons();
+        });
+
+      // Calling the renderButtons function at least once to display the initial list of topics
+      renderButtons();
+
+
+
+    // This function handles events where one button is clicked
+    $(".prof").on("click", function(event) {
+
+      console.log("Inside button click");
+
+      event.preventDefault();
+      var professions = $(this).attr("data-name");
+      console.log(professions);
+      var queryURL = "https://api.giphy.com/v1/gifs/search?q="+professions+"&api_key=gdASHV7Mmy3UZpUWVwXOXJ1TdUJRW0OO&limit=10";
+      $.ajax({
+      url: queryURL,
+      method: "GET"
+      }).then(function(response) {
+        console.log(response);
+
+        for(var i=0;i<response.data.length;i++){
+          var gDiv = $("<div>");
+          var p = $("<p>").text(response.data[i].rating);
+          var img = $("<img>");
+          img.attr("src",response.data[i].images.downsized_still.url);
+          img.attr("data-still", response.data[i].images.downsized_still.url);
+          img.attr("data-animate", response.data[i].images.downsized.url);
+          img.attr("data-state","still");
+          img.addClass("gifs");
+          gDiv.append(p, img);
+          $("#giphy-images").append(gDiv);
+        }
+       
+  })
+
+});
+
+$(document).on("click",".gifs",function(){
+  var state = $(this).attr("data-state");
+  if(state == "animate"){
+    $(this).attr("src", $(this).data("still"));
+    $(this).attr("data-state","still");
+  } 
+  else{
+    $(this).attr("src", $(this).data("animate"));
+    $(this).attr("data-state","animate");
+  }
+})
+
+    // event.preventDefault() prevents the form from trying to submit itself.
+    // We're using a form so that the user can hit enter instead of clicking the button if they want
+      
+
+    </script>
+  </div>
+</body>
+
+</html>
